@@ -1,0 +1,17 @@
+PROJECT CONTEXT (READ FIRST)
+
+Project: Multi-branch Dental Clinic Management System
+Backend: Django (monolith, multi-app)
+Frontend: React
+Auth: JWT
+Architecture principles:
+- Strict RBAC (Patient, Front Desk, Doctor, Cashier, Manager, Admin)
+- Separation of duties (doctor ≠ cashier ≠ front desk)
+- Immutable audit logs
+- EOD financial lock
+- Visit → Invoice → Payment lifecycle
+- Single database, branch-scoped data
+- No hard deletes for financial/medical data
+
+Current focus:
+Accounts app – Custom User model & JWT
