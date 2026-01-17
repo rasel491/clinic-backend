@@ -1,9 +1,10 @@
+structure:
 Backend: Django
 frontend: React
-Jwt
-clinic/
+Jwt  ✅
+clinic/ 
 Backend/
-    ├── config/                     # Project configuration
+    ├── config/      ✅              # Project configuration
     │   ├── __init__.py
     │   ├── asgi.py
     │   ├── urls.py
@@ -13,29 +14,35 @@ Backend/
     │   │   ├── base.py
     │   │   ├── local.py
     │   │   └── production.py
-│   │   
-│   ├── core/                 # hared utilities. 
-│   │   ├── __init__.py
-│   │   ├── constants.py     
-│   │   ├── exceptions.py     # Custom exceptions
-│   │   ├── permissions.py    # Base permission classes
-│   │   ├── validators.py     # Shared validators
-│   │   ├── mixins.py         # Model/view mixins
-│   │   └── utils.py          # Shared utilities
-│   │    
-│   ├── middleware/           # Custom middleware 
-│   │   ├── __init__.py
-│   │   ├── audit_middleware.py
-│   │   ├── branch_middleware.py  # Auto-scope to branch
-│   │   └── device_middleware.py  # Track which device
-│   │   
-│   ├── signals/              # Centralized signal handlers 
+    │   │   
+    ├── core/                           # Cross-cutting system layer
+    │   ├── __init__.py
+    │   ├── constants.py
+    │   ├── exceptions.py               # Custom exceptions
+    │   ├── middleware.py               
+    │   ├── permissions.py              # Base RBAC permissions
+    │   ├── validators.py               # Shared validators
+    │   ├── utils.py                    # Shared helpers
+    │   │
+    │   ├── middleware/                 # Infrastructure middleware
     │   │   ├── __init__.py
-    │   │   ├── audit_signals.py
-    │   │   ├── notification_signals.py
-    │   │   └── eod_signals.py
+    │   │   ├── audit_middleware.py
+    │   │   ├── branch_middleware.py    # Auto-scope to branch
+    │   │   └── device_middleware.py
+    |   |
+    │   ├── mixins/                     # Reusable model/view mixins
+    │   │   ├── __init__.py
+    │   │   ├── branch_querystd.py
+    │   │   ├── soft_delete.py
+    │   │   └── audit_fields.py
+
+│   ├── signals/                        # Event listeners only
+    │   ├── __init__.py
+    │   ├── audit_signals.py
+    │   ├── notification_signals.py
+    │   └── eod_signals.py
 │   │   
-│   ├── services/              # Centralized signal handlers 
+│   ├── services/                       # Business orchestration logic
     │   ├── __init__.py
     │   ├── audit_service.py
     │   ├── eod_service.py
@@ -48,8 +55,9 @@ Backend/
 │   │   │   ├── __init__.py
 │   │   │   ├── admin.py
 │   │   │   ├── apps.py
-│   │   │   ├── models.py
+│   │   │   ├── models.py               # User, UserDevice (NO domain data)
 │   │   │   ├── serializers.py
+│   │   │   ├── permissions.py          # Role-specific permissions
 │   │   │   ├── views.py
 │   │   │   └── urls.py
 │   │   │   
@@ -212,19 +220,70 @@ Backend/
 
 
 
-apps/
-├── accounts        # Users, roles, permissions ✅
-├── audit           # Immutable logs ✅
-├── billing         # Charges, invoices ✅
-├── clinics         # ✅
-├── doctors         # Doctor profiles & schedules ✅
-├── notifications   # SMS, email, in-app ✅
-├── otp             #✅
-├── patients        # Patient profiles ✅
-├── payments        # Cash, card, mobile, refunds ✅
-├── prescriptions   # Doctor outputs ✅
-├── reports         # Management views ✅
-├── settings_core   # Clinic branches, counters, configs ✅
-├── treatments      # Dental procedures & plans ✅
-└── visits          # Visit & appointment logic ✅
+=================================================
 
+apps/
+└── accounts/
+    ├── __init__.py
+    ├── admin.py
+    ├── apps.py
+    │
+    ├── models.py
+    │   ├── User                 # Custom user model
+    │   ├── UserRole             # Role assignment (RBAC)
+    │   ├── UserBranch           # Branch mapping
+    │   └── UserDevice           # Device/session tracking
+    │
+    ├── serializers.py
+    │   ├── LoginSerializer
+    │   ├── TokenSerializer
+    │   ├── UserSerializer
+    │   └── PasswordChangeSerializer
+    │
+    ├── permissions.py
+    │   ├── IsAdmin
+    │   ├── IsManager
+    │   ├── IsDoctor
+    │   ├── IsFrontDesk
+    │   ├── IsCashier
+    │   └── IsPatient
+    │
+    ├── views.py
+    │   ├── LoginView
+    │   ├── RefreshTokenView
+    │   ├── LogoutView
+    │   ├── MeView
+    │   └── DeviceRevokeView
+    │
+    └── urls.py
+
+
+
+
+
+# 1. Core infrastructure apps
+python manage.py makemigrations accounts
+python manage.py makemigrations audit
+python manage.py makemigrations clinics
+
+# 2. Clinical apps
+python manage.py makemigrations patients
+python manage.py makemigrations doctors
+python manage.py makemigrations prescriptions
+python manage.py makemigrations treatments
+python manage.py makemigrations visits
+
+# 3. Financial apps
+python manage.py makemigrations billing
+python manage.py makemigrations payments
+python manage.py makemigrations eod
+
+# 4. Other apps (if they exist)
+python manage.py makemigrations notifications
+python manage.py makemigrations otp
+python manage.py makemigrations reports
+python manage.py makemigrations settings_core
+python manage.py makemigrations integrations
+
+# Finally, migrate all
+python manage.py migrate
