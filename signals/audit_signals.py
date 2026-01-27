@@ -1,45 +1,86 @@
-from django.db.models.signals import pre_save, post_save, pre_delete
-from django.dispatch import receiver
-from apps.audit.services import snapshot, log_action
+# # core/signals/audit_signals.py (apps base signal.py)
 
-TRACKED_MODELS = [
-    "visits.Visit",
-    "billing.Invoice",
-    "payments.Payment",
-    "eod.EndOfDay",
-    "patients.Patient",
-    "prescriptions.Prescription",
-]
+# from django.db.models.signals import pre_save, post_save, pre_delete
+# from django.dispatch import receiver
+# from django.apps import apps
 
-# Pre-save: capture old state
-@receiver(pre_save)
-def pre_save_audit(sender, instance, **kwargs):
-    if f"{sender._meta.app_label}.{sender.__name__}" in TRACKED_MODELS:
-        snapshot(instance)
+# from apps.audit.models import AuditLog
+# from apps.audit.services import snapshot, log_action
 
-# Post-save: log create/update
-@receiver(post_save)
-def post_save_audit(sender, instance, created, **kwargs):
-    if f"{sender._meta.app_label}.{sender.__name__}" in TRACKED_MODELS:
-        action = "create" if created else "update"
-        log_action(
-            user=getattr(instance, "_current_user", None),
-            branch=getattr(instance, "branch", None),
-            instance=instance,
-            action=action,
-            device_id=getattr(instance, "_current_device", None),
-            ip_address=getattr(instance, "_current_ip", None),
-        )
 
-# Pre-delete: log deletion
-@receiver(pre_delete)
-def pre_delete_audit(sender, instance, **kwargs):
-    if f"{sender._meta.app_label}.{sender.__name__}" in TRACKED_MODELS:
-        log_action(
-            user=getattr(instance, "_current_user", None),
-            branch=getattr(instance, "branch", None),
-            instance=instance,
-            action="delete",
-            device_id=getattr(instance, "_current_device", None),
-            ip_address=getattr(instance, "_current_ip", None),
-        )
+# # ==========================
+# # Tracked models (resolved once)
+# # ==========================
+
+# TRACKED_MODELS = {
+#     apps.get_model("visits", "Visit"),
+#     apps.get_model("billing", "Invoice"),
+#     apps.get_model("payments", "Payment"),
+#     apps.get_model("eod", "EndOfDay"),
+#     apps.get_model("patients", "Patient"),
+#     apps.get_model("prescriptions", "Prescription"),
+# }
+
+
+# def is_tracked_model(sender):
+#     return sender in TRACKED_MODELS
+
+
+# # ==========================
+# # PRE-SAVE (snapshot before update)
+# # ==========================
+
+# @receiver(pre_save)
+# def audit_pre_save(sender, instance, **kwargs):
+#     if not is_tracked_model(sender):
+#         return
+
+#     # Skip create
+#     if instance._state.adding:
+#         return
+
+#     # Capture "before" state
+#     snapshot(instance)
+
+
+# # ==========================
+# # POST-SAVE (create / update)
+# # ==========================
+
+# @receiver(post_save)
+# def audit_post_save(sender, instance, created, **kwargs):
+#     if not is_tracked_model(sender):
+#         return
+
+#     action = "CREATE" if created else "UPDATE"
+
+#     log_action(
+#         user=getattr(instance, "_current_user", None),
+#         branch=getattr(instance, "branch", None),
+#         instance=instance,
+#         action=action,
+#         device_id=getattr(instance, "_current_device", None),
+#         ip_address=getattr(instance, "_current_ip", None),
+#     )
+
+
+# # ==========================
+# # PRE-DELETE (delete with snapshot)
+# # ==========================
+
+# @receiver(pre_delete)
+# def audit_pre_delete(sender, instance, **kwargs):
+#     if not is_tracked_model(sender):
+#         return
+
+#     # Capture state before delete
+#     snapshot(instance)
+
+#     log_action(
+#         user=getattr(instance, "_current_user", None),
+#         branch=getattr(instance, "branch", None),
+#         instance=instance,
+#         action="DELETE",
+#         device_id=getattr(instance, "_current_device", None),
+#         ip_address=getattr(instance, "_current_ip", None),
+#     )

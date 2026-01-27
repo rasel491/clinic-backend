@@ -1,13 +1,21 @@
 # apps/eod/urls.py
-from django.urls import path
+
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views
 
-app_name = 'eod'
+router = DefaultRouter()
+router.register(r'eod-locks', views.EodLockViewSet, basename='eod-lock')
+router.register(r'daily-summaries', views.DailySummaryViewSet, basename='daily-summary')
+router.register(r'cash-reconciliations', views.CashReconciliationViewSet, basename='cash-reconciliation')
+router.register(r'eod-exceptions', views.EodExceptionViewSet, basename='eod-exception')
 
 urlpatterns = [
-    # TODO: Add API endpoints when we build the API layer
-    # path('eod/', views.EodListView.as_view(), name='eod-list'),
-    # path('eod/<uuid:pk>/', views.EodDetailView.as_view(), name='eod-detail'),
-    # path('eod/<uuid:pk>/lock/', views.LockEodView.as_view(), name='eod-lock'),
-    # path('eod/<uuid:pk>/reverse/', views.ReverseEodView.as_view(), name='eod-reverse'),
+    path('', include(router.urls)),
+    
+    # API endpoints
+    path('check-date-lock/', views.CheckDateLockStatusAPIView.as_view(), name='check-date-lock'),
+    path('cash-position/', views.GetCashPositionAPIView.as_view(), name='cash-position'),
+    path('generate-report/', views.GenerateEodReportAPIView.as_view(), name='generate-report'),
+    path('validate-transaction-date/', views.ValidateTransactionDateAPIView.as_view(), name='validate-transaction-date'),
 ]

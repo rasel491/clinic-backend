@@ -1,6 +1,6 @@
 structure:
 Backend: Django
-frontend: React
+frontend: React, Typescripts
 Jwt  ✅
 clinic/ 
 Backend/
@@ -35,7 +35,7 @@ Backend/
     │   │   ├── branch_querystd.py
     │   │   ├── soft_delete.py
     │   │   └── audit_fields.py
-
+    |
 │   ├── signals/                        # Event listeners only
     │   ├── __init__.py
     │   ├── audit_signals.py
@@ -53,146 +53,235 @@ Backend/
 │   ├── apps/          # Business logic apps
 │   │   ├── accounts/
 │   │   │   ├── __init__.py
+│   │   │   ├── migrations/
 │   │   │   ├── admin.py
 │   │   │   ├── apps.py
+│   │   │   ├── authentication.py   
 │   │   │   ├── models.py               # User, UserDevice (NO domain data)
+│   │   │   ├── permissions.py          # Role-specific permissions   
 │   │   │   ├── serializers.py
-│   │   │   ├── permissions.py          # Role-specific permissions
+│   │   │   ├── signals.py
 │   │   │   ├── views.py
 │   │   │   └── urls.py
 │   │   │   
 │   │   ├── audit/
 │   │   │   ├── __init__.py
+│   │   │   ├── migrations/
 │   │   │   ├── admin.py
 │   │   │   ├── apps.py
+│   │   │   ├── filters.py
 │   │   │   ├── models.py
-│   │   │   ├── serializers.py
+│   │   │   ├── services.py
+│   │   │   ├── signals.py
 │   │   │   ├── views.py
+│   │   │   ├── utils.py
+│   │   │   |
+        |   ├── serializers/
+        |   │   ├── __init__.py
+        |   │   ├── alert.py
+        |   │   ├── base.py
+        |   │   ├── detail.py
+        |   │   ├── diff.py
+        |   │   ├── export.py
+        |   │   ├── list.py
+        |   │   ├── response.py
+        |   │   ├── stats.py
+        |   │   ├── trail.py
+        |   │   └── webhook.py
+        |   │
+        |   ├── views/
+        |   │   ├── __init__.py
+        |   │   ├── admin.py            # manual + bulk
+        |   │   ├── base.py             # AuditLogViewSet (list/retrieve only)
+        |   │   ├── export.py
+        |   │   ├── health.py
+        |   │   ├── stats.py            # stats + summary
+        |   │   ├── trail.py
+        |   │   ├── verify.py
+        |   │   └── webhooks.py
 │   │   │   └── urls.py
+│   │   │   
 │   │   │   
 │   │   ├── billing/
 │   │   │   ├── __init__.py
+│   │   │   ├── migrations/
 │   │   │   ├── admin.py
 │   │   │   ├── apps.py
 │   │   │   ├── models.py
 │   │   │   ├── serializers.py
+│   │   │   ├── signals.py
 │   │   │   ├── views.py
 │   │   │   └── urls.py
 │   │   │
 │   │   ├── clinics/
 │   │   │   ├── __init__.py
+│   │   │   ├── migrations/
+│   │   │   |   └── __init__.py
 │   │   │   ├── admin.py
 │   │   │   ├── apps.py
+│   │   │   ├── constants.py
+│   │   │   ├── filters.py
+│   │   │   |   
+│   │   │   ├── models/
+|   |   |   │   ├── __init__.py
+|   |   |   │   ├── clinic.py          # Clinic / Organization
+|   |   |   │   ├── branch.py          # Branch model
+|   |   |   │   ├── counter.py         # Reception / Counter / Desk
+|   |   |   │   └── availability.py    # Time slots, working hours
+|   |   |   │   
+|   |   |   ├── serializers/
+|   |   |   │   ├── __init__.py
+|   |   |   │   ├── clinic.py
+|   |   |   │   ├── branch.py
+|   |   |   │   ├── counter.py
+|   |   |   │   └── availability.py
+|   │   |   |
+|   |   |   ├── views/
+|   |   |   │   ├── __init__.py
+|   |   |   │   ├── availability.py
+|   |   |   │   ├── branch.py
+|   |   |   │   ├── clinic.py
+|   |   |   │   ├── counter.py
+|   |   |   │   ├── health.py
+|   |   |   │   ├── import_export.py
+|   |   |   │   └── public.py
+|   │   |   |
 │   │   │   ├── models.py
 │   │   │   ├── serializers.py
+│   │   │   ├── signals.py
 │   │   │   ├── views.py
+│   │   │   ├── utils.py
 │   │   │   └── urls.py
 │   │   │   
 │   │   ├── doctors/
 │   │   │   ├── __init__.py
+│   │   │   ├── migrations/
 │   │   │   ├── admin.py
 │   │   │   ├── apps.py
 │   │   │   ├── models.py
 │   │   │   ├── serializers.py
+│   │   │   ├── signals.py
 │   │   │   ├── views.py
 │   │   │   └── urls.py
 │   │   │   
 │   │   ├── eod/
 │   │   │   ├── __init__.py
+│   │   │   ├── migrations/
 │   │   │   ├── admin.py
 │   │   │   ├── apps.py
 │   │   │   ├── models.py
 │   │   │   ├── serializers.py
+│   │   │   ├── signals.py
 │   │   │   ├── views.py
 │   │   │   └── urls.py
 │   │   │ 
 │   │   ├── notifications/
 │   │   │   ├── __init__.py
+│   │   │   ├── migrations/
 │   │   │   ├── admin.py
 │   │   │   ├── apps.py
 │   │   │   ├── models.py
 │   │   │   ├── serializers.py
+│   │   │   ├── signals.py
 │   │   │   ├── views.py
 │   │   │   └── urls.py
 │   │   │
 │   │   ├── otp/
 │   │   │   ├── __init__.py
+│   │   │   ├── migrations/
 │   │   │   ├── admin.py
 │   │   │   ├── apps.py
 │   │   │   ├── models.py
 │   │   │   ├── serializers.py
+│   │   │   ├── signals.py
 │   │   │   ├── views.py
 │   │   │   └── urls.py
 │   │   │  
 │   │   ├── patients/
 │   │   │   ├── __init__.py
+│   │   │   ├── migrations/
 │   │   │   ├── admin.py
 │   │   │   ├── apps.py
 │   │   │   ├── models.py
 │   │   │   ├── serializers.py
+│   │   │   ├── signals.py
 │   │   │   ├── views.py
 │   │   │   └── urls.py
 │   │   │
 │   │   ├── payments/
 │   │   │   ├── __init__.py
+│   │   │   ├── migrations/
 │   │   │   ├── admin.py
 │   │   │   ├── apps.py
 │   │   │   ├── models.py
 │   │   │   ├── serializers.py
+│   │   │   ├── signals.py
 │   │   │   ├── views.py
 │   │   │   └── urls.py
 │   │   │  
 │   │   ├── prescriptions/
 │   │   │   ├── __init__.py
+│   │   │   ├── migrations/
 │   │   │   ├── admin.py
 │   │   │   ├── apps.py
 │   │   │   ├── models.py
 │   │   │   ├── serializers.py
+│   │   │   ├── signals.py
 │   │   │   ├── views.py
 │   │   │   └── urls.py
 │   │   │  
 │   │   ├── reports/
 │   │   │   ├── __init__.py
+│   │   │   ├── migrations/
 │   │   │   ├── admin.py
 │   │   │   ├── apps.py
 │   │   │   ├── models.py
 │   │   │   ├── serializers.py
+│   │   │   ├── signals.py
 │   │   │   ├── views.py
 │   │   │   └── urls.py
 │   │   │   
 │   │   ├── settings_core/
 │   │   │   ├── __init__.py
+│   │   │   ├── migrations/
 │   │   │   ├── admin.py
 │   │   │   ├── apps.py
 │   │   │   ├── models.py
 │   │   │   ├── serializers.py
+│   │   │   ├── signals.py
 │   │   │   ├── views.py
 │   │   │   └── urls.py
 │   │   │   
 │   │   ├── treatments/
 │   │   │   ├── __init__.py
+│   │   │   ├── migrations/
 │   │   │   ├── admin.py
 │   │   │   ├── apps.py
 │   │   │   ├── models.py
 │   │   │   ├── serializers.py
+│   │   │   ├── signals.py
 │   │   │   ├── views.py
 │   │   │   └── urls.py
 │   │   │   
 │   │   ├── visits/
 │   │   │   ├── __init__.py
+│   │   │   ├── migrations/
 │   │   │   ├── admin.py
 │   │   │   ├── apps.py
 │   │   │   ├── models.py
 │   │   │   ├── serializers.py
+│   │   │   ├── signals.py
 │   │   │   ├── views.py
 │   │   │   └── urls.py
 │   │   │
 │   │   └── integrations/
     │       ├── __init__.py
+    │       ├── migrations/
     │       ├── admin.py
     │       ├── apps.py
     │       ├── models.py          # Pharmacy connections, API keys
     │       ├── serializers.py
+    │       ├── signals.py
     │       ├── views.py
     │       ├── urls.py
     │       ├── pharmacy/          # Sub-module
@@ -216,6 +305,55 @@ Backend/
     └── README.md
 
 
+
+
+
+
+
+
+
+
+apps/audit/
+├── __init__.py
+├── admin.py
+├── apps.py
+├── models.py
+├── permissions.py
+├── signals.py
+├── tasks.py                # celery (export / cleanup)
+├── utils.py                # small helpers (hash, diff)
+│
+├── filters.py
+├── serializers/
+│   ├── __init__.py
+│   ├── base.py
+│   ├── list.py
+│   ├── detail.py
+│   ├── stats.py
+│   ├── export.py
+│   └── diff.py
+│
+├── services/
+│   ├── __init__.py
+│   ├── logger.py           # log_action, log_create, log_update
+│   ├── chain.py            # verify_chain
+│   ├── trail.py            # get_audit_trail
+│   ├── exporter.py         # CSV / Excel / JSON logic
+│   └── scope.py            # queryset permission scoping
+│
+├── views/
+│   ├── __init__.py
+│   ├── base.py             # AuditLogViewSet (list/retrieve only)
+│   ├── stats.py            # stats + summary
+│   ├── export.py
+│   ├── verify.py
+│   ├── trail.py
+│   ├── feed.py
+│   ├── admin.py            # manual + bulk
+│   ├── health.py
+│   └── webhooks.py
+│
+└── urls.py
 
 
 
@@ -258,6 +396,47 @@ apps/
     └── urls.py
 
 
+apps/audit/
+├── __init__.py
+├── admin.py
+├── apps.py
+├── models.py
+├── permissions.py
+├── signals.py
+├── tasks.py                # celery (export / cleanup)
+├── utils.py                # small helpers (hash, diff)
+│
+├── filters.py
+├── serializers/
+│   ├── __init__.py
+│   ├── base.py
+│   ├── list.py
+│   ├── detail.py
+│   ├── stats.py
+│   ├── export.py
+│   └── diff.py
+│
+├── services/
+│   ├── __init__.py
+│   ├── logger.py           # log_action, log_create, log_update
+│   ├── chain.py            # verify_chain
+│   ├── trail.py            # get_audit_trail
+│   ├── exporter.py         # CSV / Excel / JSON logic
+│   └── scope.py            # queryset permission scoping
+│
+├── views/
+│   ├── __init__.py
+│   ├── base.py             # AuditLogViewSet (list/retrieve only)
+│   ├── stats.py            # stats + summary
+│   ├── export.py
+│   ├── verify.py
+│   ├── trail.py
+│   ├── feed.py
+│   ├── admin.py            # manual + bulk
+│   ├── health.py
+│   └── webhooks.py
+│
+└── urls.py
 
 
 
@@ -287,3 +466,120 @@ python manage.py makemigrations integrations
 
 # Finally, migrate all
 python manage.py migrate
+
+
+
+
+
+
+
+apps/
+├── inventory/                    # SEPARATE CORE INVENTORY APP
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py               # Core 7 models + relationships
+│   ├── serializers.py
+│   ├── views.py                # REST API endpoints
+│   ├── urls.py
+│   ├── services.py             # Business logic services
+│   ├── signals.py              # Inventory-specific signals
+│   ├── filters.py              # Filter classes for APIs
+│   ├── permissions.py          # Inventory-specific permissions
+│   ├── utils.py                # Inventory utilities
+│   │
+│   ├── migrations/             # Django migrations
+│   │
+│   ├── domain/                 # BUSINESS DOMAIN LOGIC (Clean Architecture)
+│   │   ├── __init__.py
+│   │   ├── models/             # Domain models (if different from Django models)
+│   │   ├── services/           # Pure business logic
+│   │   ├── repositories/       # Data access abstraction
+│   │   └── value_objects/      # Value objects for business logic
+│   │
+│   ├── integrations/           # External connections FROM inventory
+│   │   ├── __init__.py
+│   │   ├── pharmacy_api.py     # Pharmacy inventory sync
+│   │   └── external_suppliers.py # Supplier portal APIs
+│   │
+│   ├── management/             # Django management commands
+│   │   ├── __init__.py
+│   │   ├── commands/
+│   │   │   ├── __init__.py
+│   │   │   ├── check_stock.py
+│   │   │   ├── generate_reports.py
+│   │   │   └── cleanup_expired.py
+│   │
+│   ├── templates/              # Admin templates (if custom)
+│   │   └── admin/
+│   │       └── inventory/
+│   │
+│   └── tests/                  # Comprehensive tests
+│       ├── __init__.py
+│       ├── test_models.py
+│       ├── test_services.py
+│       ├── test_views.py
+│       └── integration/
+│           └── test_prescription_integration.py
+│
+├── integrations/               # EXTERNAL INTEGRATIONS HUB (as planned)
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py              # Integration configs, API keys
+│   ├── serializers.py
+│   ├── views.py               # API endpoints for integrations
+│   ├── urls.py
+│   ├── services.py            # Integration orchestration
+│   ├── signals.py
+│   │
+│   ├── pharmacy/              # Pharmacy integrations
+│   │   ├── __init__.py
+│   │   ├── qr_service.py
+│   │   └── api_client.py
+│   │
+│   └── payment_gateways/      # Payment integrations
+│       ├── __init__.py
+│       ├── razorpay.py
+│       ├── stripe.py
+│       └── upi_gateways.py
+
+
+
+
+
+apps/integrations/
+├── __init__.py
+├── admin.py
+├── apps.py
+├── models.py              # Integration configurations, API keys
+├── serializers.py
+├── views.py               # API endpoints for integrations
+├── urls.py
+├── services.py            # Integration orchestration service
+├── signals.py
+├── permissions.py         # Integration-specific permissions
+├── utils.py
+│
+├── pharmacy/              # Pharmacy integrations
+│   ├── __init__.py
+│   ├── api_client.py      # Pharmacy API client
+│   ├── qr_service.py      # QR code generation for prescriptions
+│   ├── models.py          # Pharmacy-specific models
+│   └── serializers.py     # Pharmacy serializers
+│
+├── payment_gateways/      # Payment gateway integrations
+│   ├── __init__.py
+│   ├── base_gateway.py    # Base gateway class
+│   ├── razorpay.py        # RazorPay integration
+│   ├── stripe.py          # Stripe integration
+│   ├── upi_gateways.py    # UPI payment gateways
+│   └── payment_links.py   # Payment link generation
+│
+├── insurance/             # Insurance integrations (future)
+│   ├── __init__.py
+│   └── claim_processor.py
+│
+└── external_labs/         # Lab integrations (future)
+    ├── __init__.py
+    └── lab_api_client.py

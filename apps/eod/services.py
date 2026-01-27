@@ -9,9 +9,57 @@ from ..billing.models import Invoice
 from ..payments.models import Payment, Refund
 from ..clinics.models import Branch
 
+from django.db import transaction
+from django.core.exceptions import ValidationError
+from apps.audit.services import log_action
 
 class EodService:
-    """Service class for EOD business logic"""
+    """
+    End Of Day financial locking service
+    """
+    @staticmethod
+    @transaction.atomic
+    def close_day(branch, user, device_id=None, ip_address=None):
+        if branch.is_eod_locked:
+            raise ValidationError("EOD already closed for this branch")
+
+        # 1️⃣ Lock all open invoices
+        invoices = Invoice.objects.select_for_update().filter(
+            branch=branch,
+            is_locked=False
+        )
+
+        for invoice in invoices:
+            invoice.is_locked = True
+            invoice.save(update_fields=["is_locked"])
+
+            log_action(
+                user=user,
+                branch=branch,
+                instance=invoice,
+                action="EOD_LOCK",
+                device_id=device_id,
+                ip_address=ip_address,
+            )
+
+        # 2️⃣ Lock branch
+        branch.is_eod_locked = True
+        branch.eod_closed_at = timezone.now()
+        branch.save(update_fields=["is_eod_locked", "eod_closed_at"])
+
+        log_action(
+            user=user,
+            branch=branch,
+            instance=branch,
+            action="EOD_CLOSE",
+            device_id=device_id,
+            ip_address=ip_address,
+        )
+
+        return {
+            "locked_invoices": invoices.count(),
+            "closed_at": branch.eod_closed_at,
+        }
     
     @staticmethod
     def prepare_eod(branch, prepared_by, lock_date=None):
@@ -194,6 +242,29 @@ class EodService:
         return [d for d in all_dates if d not in locked_dates]
 
 
+    @staticmethod
+    def validate_transaction_before_posting(branch, transaction_date, transaction_type, amount):
+        """
+        Validate if transaction can be posted for a given date
+        """
+        if EodLock.objects.filter(
+            branch=branch,
+            lock_date=transaction_date.date(),
+            status=EodLock.LOCKED
+        ).exists():
+            raise ValidationError(
+                f"Cannot post {transaction_type} for locked date {transaction_date.date()}"
+            )
+        
+        # Check if transaction date is too far in past (configurable)
+        max_allowed_days = 30
+        if (timezone.now().date() - transaction_date.date()).days > max_allowed_days:
+            raise ValidationError(
+                f"Cannot post transactions older than {max_allowed_days} days"
+            )
+        
+        return True
+    
 class CashManagementService:
     """Service class for cash management"""
     

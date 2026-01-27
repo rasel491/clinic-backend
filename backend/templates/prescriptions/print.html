@@ -1,0 +1,243 @@
+<!-- apps/prescriptions/templates/prescriptions/print.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prescription - {{ prescription.prescription_id }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+        }
+        .clinic-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .clinic-details {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        .prescription-id {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-top: 10px;
+        }
+        .section {
+            margin: 20px 0;
+        }
+        .section-title {
+            font-weight: bold;
+            color: #2c3e50;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .patient-info, .doctor-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .info-block {
+            width: 48%;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #7f8c8d;
+            margin-right: 10px;
+        }
+        .diagnosis {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .medications-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .medications-table th {
+            background-color: #3498db;
+            color: white;
+            text-align: left;
+            padding: 10px;
+        }
+        .medications-table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .medications-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .instructions {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        .signature {
+            margin-top: 50px;
+            text-align: right;
+        }
+        .doctor-signature {
+            border-top: 1px solid #333;
+            display: inline-block;
+            padding-top: 5px;
+            min-width: 200px;
+        }
+        .validity {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .print-button {
+            display: none; /* Hide in print */
+        }
+        @media print {
+            body {
+                margin: 0;
+                padding: 20px;
+            }
+            .print-button {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="clinic-name">{{ clinic_name }}</div>
+        <div class="clinic-details">
+            {{ clinic_address }} | Phone: {{ clinic_phone }}
+        </div>
+        <div class="prescription-id">
+            Prescription ID: {{ prescription.prescription_id }}
+        </div>
+    </div>
+
+    <div class="patient-info">
+        <div class="info-block">
+            <div class="section-title">Patient Information</div>
+            <div><span class="info-label">Name:</span> {{ patient.full_name }}</div>
+            <div><span class="info-label">Patient ID:</span> {{ patient.patient_id }}</div>
+            <div><span class="info-label">Age:</span> {{ patient.age }} years</div>
+            <div><span class="info-label">Gender:</span> {{ patient.get_gender_display }}</div>
+        </div>
+        <div class="info-block">
+            <div class="section-title">Prescription Details</div>
+            <div><span class="info-label">Date:</span> {{ prescription.issue_date }}</div>
+            <div><span class="info-label">Valid Until:</span> {{ prescription.valid_until }}</div>
+            <div><span class="info-label">Status:</span> {{ prescription.get_status_display }}</div>
+            <div><span class="info-label">Type:</span> {{ prescription.get_prescription_type_display }}</div>
+        </div>
+    </div>
+
+    <div class="doctor-info">
+        <div class="info-block">
+            <div class="section-title">Doctor Information</div>
+            <div><span class="info-label">Name:</span> Dr. {{ doctor.user.full_name }}</div>
+            <div><span class="info-label">Doctor ID:</span> {{ doctor.doctor_id }}</div>
+            <div><span class="info-label">Specialization:</span> {{ doctor.get_specialization_display }}</div>
+            <div><span class="info-label">License:</span> {{ doctor.license_number }}</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Diagnosis</div>
+        <div class="diagnosis">{{ prescription.diagnosis|linebreaks }}</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Medications</div>
+        <table class="medications-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Medication</th>
+                    <th>Dosage</th>
+                    <th>Frequency</th>
+                    <th>Duration</th>
+                    <th>Instructions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.medication.name }} ({{ item.medication.strength }})</td>
+                    <td>{{ item.dosage }}</td>
+                    <td>{{ item.get_frequency_display }}</td>
+                    <td>{{ item.duration }} {{ item.get_duration_unit_display }}</td>
+                    <td>{{ item.instructions }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if prescription.instructions %}
+    <div class="section">
+        <div class="section-title">General Instructions</div>
+        <div class="instructions">{{ prescription.instructions|linebreaks }}</div>
+    </div>
+    {% endif %}
+
+    {% if prescription.notes %}
+    <div class="section">
+        <div class="section-title">Doctor's Notes</div>
+        <div>{{ prescription.notes|linebreaks }}</div>
+    </div>
+    {% endif %}
+
+    <div class="validity">
+        This prescription is valid until: {{ prescription.valid_until }}
+        {% if prescription.is_refillable %}
+        | Refills remaining: {{ prescription.refills_remaining }}
+        {% endif %}
+    </div>
+
+    <div class="signature">
+        <div class="doctor-signature">
+            <div>Dr. {{ doctor.user.full_name }}</div>
+            <div>{{ doctor.license_number }}</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div>Generated on: {{ today }}</div>
+        <div>{{ clinic_name }} | {{ clinic_address }} | {{ clinic_phone }}</div>
+        <div>Prescription ID: {{ prescription.prescription_id }}</div>
+    </div>
+
+    <div class="print-button">
+        <button onclick="window.print()">Print Prescription</button>
+    </div>
+
+    <script>
+        // Auto-print when loaded (optional)
+        window.onload = function() {
+            // Uncomment to auto-print
+            // window.print();
+        };
+    </script>
+</body>
+</html>

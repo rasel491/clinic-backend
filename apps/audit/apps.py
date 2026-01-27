@@ -3,3 +3,7 @@ from django.apps import AppConfig
 
 class AuditConfig(AppConfig):
     name = 'apps.audit'
+    verbose_name = "Audit System"
+
+    def ready(self):
+        import apps.audit.signals

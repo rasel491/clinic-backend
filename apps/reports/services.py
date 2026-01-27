@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.conf import settings
 
 from .models import ReportTemplate, GeneratedReport, ReportData
-from apps.billing.models import Invoice, Payment
+from apps.billing.models import Invoice
 from apps.payments.models import Payment as PaymentModel
 from apps.visits.models import Visit, Appointment
 from apps.patients.models import Patient
